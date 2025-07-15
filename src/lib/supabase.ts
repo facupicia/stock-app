@@ -25,29 +25,3 @@ export interface Producto {
   created_at: string;
   updated_at: string;
 }
-
-export interface Venta {
-  id: string;
-  producto_id: string;
-  cantidad: number;
-  precio_unitario: number;
-  total?: number;
-  metodo_pago: string;
-  comision_porcentaje?: number;
-  ganancia_neta?: number;
-  fecha: string;
-  notas?: string;
-  productos?: Producto;
-}
-
-export interface Compra {
-  id: string;
-  producto_id: string;
-  cantidad: number;
-  precio_unitario: number;
-  total?: number;
-  proveedor?: string;
-  fecha: string;
-  notas?: string;
-  productos?: Producto;
-}

@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Package, Calculator, BarChart3, Search, Plus, AlertTriangle, ShoppingCart, TrendingUp } from 'lucide-react';
+import { Package, Calculator, BarChart3, Search, Plus, AlertTriangle, TrendingUp } from 'lucide-react';
 import ProductForm from './components/ProductForm';
 import ProductList from './components/ProductList';
 import PriceCalculator from './components/PriceCalculator';
 import StockChart from './components/StockChart';
-import SalesManager from './components/SalesManager';
-import PurchaseManager from './components/PurchaseManager';
 import Dashboard from './components/Dashboard';
 import { Product } from './types/Product';
 import { ProductService } from './services/productService';
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'stock' | 'add' | 'sales' | 'purchases' | 'pricing' | 'chart'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'stock' | 'add' | 'pricing' | 'chart'>('dashboard');
   const [products, setProducts] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('');
@@ -92,8 +90,6 @@ function App() {
     { id: 'dashboard', label: 'Dashboard', icon: TrendingUp },
     { id: 'stock', label: 'Stock', icon: Package },
     { id: 'add', label: 'Agregar Producto', icon: Plus },
-    { id: 'sales', label: 'Ventas', icon: ShoppingCart },
-    { id: 'purchases', label: 'Compras', icon: Package },
     { id: 'pricing', label: 'Calculadora de Precios', icon: Calculator },
     { id: 'chart', label: 'Gráficos', icon: BarChart3 }
   ];
@@ -272,16 +268,6 @@ function App() {
             </div>
             <ProductForm onAddProduct={addProduct} />
           </div>
-        )}
-
-        {/* Sales Tab */}
-        {activeTab === 'sales' && (
-          <SalesManager products={products} onProductUpdate={loadProducts} />
-        )}
-
-        {/* Purchases Tab */}
-        {activeTab === 'purchases' && (
-          <PurchaseManager products={products} onProductUpdate={loadProducts} />
         )}
 
         {/* Price Calculator Tab */}

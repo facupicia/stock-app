@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Product, Sale, Purchase } from '../types/Product';
-import { SalesService } from '../services/salesService';
-import { PurchaseService } from '../services/purchaseService';
+import { Product } from '../types/Product';
 import { 
   TrendingUp, 
   TrendingDown, 
   Package, 
-  ShoppingCart, 
   DollarSign, 
   AlertTriangle,
   RefreshCw,
@@ -19,56 +16,11 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ products, onRefresh }) => {
-  const [salesStats, setSalesStats] = useState({
-    totalVentas: 0,
-    cantidadVendida: 0,
-    ingresoTotal: 0,
-    gananciaNeta: 0
-  });
-  
-  const [purchaseStats, setPurchaseStats] = useState({
-    totalCompras: 0,
-    cantidadComprada: 0,
-    gastoTotal: 0
-  });
-
-  const [recentSales, setRecentSales] = useState<Sale[]>([]);
-  const [recentPurchases, setRecentPurchases] = useState<Purchase[]>([]);
   const [loading, setLoading] = useState(true);
-  const [period, setPeriod] = useState<'day' | 'week' | 'month'>('month');
 
   useEffect(() => {
-    loadDashboardData();
-  }, [period]);
-
-  const loadDashboardData = async () => {
-    try {
-      setLoading(true);
-      
-      // Cargar estadísticas
-      const [salesData, purchaseData] = await Promise.all([
-        SalesService.getStats(period),
-        PurchaseService.getStats(period)
-      ]);
-      
-      setSalesStats(salesData);
-      setPurchaseStats(purchaseData);
-
-      // Cargar transacciones recientes
-      const [recentSalesData, recentPurchasesData] = await Promise.all([
-        SalesService.getAll(),
-        PurchaseService.getAll()
-      ]);
-
-      setRecentSales(recentSalesData.slice(0, 5));
-      setRecentPurchases(recentPurchasesData.slice(0, 5));
-      
-    } catch (error) {
-      console.error('Error loading dashboard data:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    setLoading(false);
+  }, []);
 
   // Calcular métricas del inventario
   const totalProducts = products.length;
@@ -77,12 +29,6 @@ const Dashboard: React.FC<DashboardProps> = ({ products, onRefresh }) => {
   const totalSaleValue = products.reduce((sum, p) => sum + (p.stock * p.precio_venta), 0);
   const lowStockProducts = products.filter(p => p.stock <= (p.stock_minimo || 5));
   const outOfStockProducts = products.filter(p => p.stock === 0);
-
-  const periodLabels = {
-    day: 'Hoy',
-    week: 'Esta Semana',
-    month: 'Este Mes'
-  };
 
   if (loading) {
     return (
@@ -99,31 +45,16 @@ const Dashboard: React.FC<DashboardProps> = ({ products, onRefresh }) => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Dashboard</h2>
-          <p className="text-gray-600">Resumen general de tu negocio</p>
+          <p className="text-gray-600">Resumen general de tu inventario</p>
         </div>
         
-        <div className="flex items-center space-x-4">
-          <select
-            value={period}
-            onChange={(e) => setPeriod(e.target.value as any)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="day">Hoy</option>
-            <option value="week">Esta Semana</option>
-            <option value="month">Este Mes</option>
-          </select>
-          
-          <button
-            onClick={() => {
-              onRefresh();
-              loadDashboardData();
-            }}
-            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <RefreshCw className="h-4 w-4" />
-            <span>Actualizar</span>
-          </button>
-        </div>
+        <button
+          onClick={onRefresh}
+          className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          <RefreshCw className="h-4 w-4" />
+          <span>Actualizar</span>
+        </button>
       </div>
 
       {/* Alertas */}
@@ -146,51 +77,51 @@ const Dashboard: React.FC<DashboardProps> = ({ products, onRefresh }) => {
 
       {/* Métricas Principales */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Ventas */}
-        <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-6 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-green-100 text-sm font-medium">Ventas {periodLabels[period]}</p>
-              <p className="text-3xl font-bold">{salesStats.totalVentas}</p>
-              <p className="text-green-100 text-sm">${salesStats.ingresoTotal.toFixed(2)} ingresos</p>
-            </div>
-            <ShoppingCart className="h-8 w-8 text-green-200" />
-          </div>
-        </div>
-
-        {/* Ganancias */}
+        {/* Total Productos */}
         <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-6 text-white">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-blue-100 text-sm font-medium">Ganancias {periodLabels[period]}</p>
-              <p className="text-3xl font-bold">${salesStats.gananciaNeta.toFixed(0)}</p>
-              <p className="text-blue-100 text-sm">{salesStats.cantidadVendida} unidades vendidas</p>
+              <p className="text-blue-100 text-sm font-medium">Total Productos</p>
+              <p className="text-3xl font-bold">{totalProducts}</p>
+              <p className="text-blue-100 text-sm">En inventario</p>
             </div>
-            <TrendingUp className="h-8 w-8 text-blue-200" />
+            <Package className="h-8 w-8 text-blue-200" />
           </div>
         </div>
 
-        {/* Compras */}
+        {/* Stock Total */}
+        <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-6 text-white">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-green-100 text-sm font-medium">Stock Total</p>
+              <p className="text-3xl font-bold">{totalStock}</p>
+              <p className="text-green-100 text-sm">Unidades disponibles</p>
+            </div>
+            <TrendingUp className="h-8 w-8 text-green-200" />
+          </div>
+        </div>
+
+        {/* Valor Inventario */}
         <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl p-6 text-white">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-purple-100 text-sm font-medium">Compras {periodLabels[period]}</p>
-              <p className="text-3xl font-bold">{purchaseStats.totalCompras}</p>
-              <p className="text-purple-100 text-sm">${purchaseStats.gastoTotal.toFixed(2)} gastado</p>
+              <p className="text-purple-100 text-sm font-medium">Valor Inventario</p>
+              <p className="text-3xl font-bold">${totalInventoryValue.toFixed(0)}</p>
+              <p className="text-purple-100 text-sm">Valor de costo</p>
             </div>
-            <TrendingDown className="h-8 w-8 text-purple-200" />
+            <DollarSign className="h-8 w-8 text-purple-200" />
           </div>
         </div>
 
-        {/* Inventario */}
+        {/* Ganancia Potencial */}
         <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl p-6 text-white">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-orange-100 text-sm font-medium">Inventario Total</p>
-              <p className="text-3xl font-bold">{totalStock}</p>
-              <p className="text-orange-100 text-sm">{totalProducts} productos</p>
+              <p className="text-orange-100 text-sm font-medium">Ganancia Potencial</p>
+              <p className="text-3xl font-bold">${(totalSaleValue - totalInventoryValue).toFixed(0)}</p>
+              <p className="text-orange-100 text-sm">Si se vende todo</p>
             </div>
-            <Package className="h-8 w-8 text-orange-200" />
+            <TrendingUp className="h-8 w-8 text-orange-200" />
           </div>
         </div>
       </div>
@@ -241,7 +172,7 @@ const Dashboard: React.FC<DashboardProps> = ({ products, onRefresh }) => {
 
         <div className="bg-white rounded-xl shadow-sm p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Rendimiento</h3>
+            <h3 className="text-lg font-semibold text-gray-900">Análisis</h3>
             <TrendingUp className="h-5 w-5 text-gray-400" />
           </div>
           <div className="space-y-2">
@@ -254,85 +185,50 @@ const Dashboard: React.FC<DashboardProps> = ({ products, onRefresh }) => {
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm text-gray-600">Rotación {periodLabels[period]}:</span>
+              <span className="text-sm text-gray-600">Productos Únicos:</span>
               <span className="font-medium">
-                {totalStock > 0 ? ((salesStats.cantidadVendida / totalStock) * 100).toFixed(1) : 0}%
+                {[...new Set(products.map(p => p.categoria))].length} categorías
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm text-gray-600">Ticket Promedio:</span>
+              <span className="text-sm text-gray-600">Precio Promedio:</span>
               <span className="font-medium">
-                ${salesStats.totalVentas > 0 ? (salesStats.ingresoTotal / salesStats.totalVentas).toFixed(2) : '0.00'}
+                ${products.length > 0 ? (products.reduce((sum, p) => sum + p.precio_venta, 0) / products.length).toFixed(2) : '0.00'}
               </span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Transacciones Recientes */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Ventas Recientes */}
+      {/* Productos con Stock Bajo */}
+      {lowStockProducts.length > 0 && (
         <div className="bg-white rounded-xl shadow-sm p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Ventas Recientes</h3>
-          {recentSales.length > 0 ? (
-            <div className="space-y-3">
-              {recentSales.map((sale) => (
-                <div key={sale.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">
-                      {sale.productos?.nombre || 'Producto eliminado'}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {sale.cantidad} unidades • {sale.metodo_pago}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-green-600">
-                      ${sale.total?.toFixed(2)}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {new Date(sale.fecha).toLocaleDateString()}
-                    </p>
-                  </div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+            <AlertTriangle className="h-5 w-5 text-yellow-600" />
+            <span>Productos con Stock Bajo</span>
+          </h3>
+          <div className="space-y-3">
+            {lowStockProducts.slice(0, 10).map((product) => (
+              <div key={product.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
+                <div>
+                  <p className="text-sm font-medium text-gray-900">{product.nombre}</p>
+                  <p className="text-xs text-gray-500">
+                    {product.categoria} • {product.talle} • {product.color}
+                  </p>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500 text-center py-4">No hay ventas recientes</p>
-          )}
-        </div>
-
-        {/* Compras Recientes */}
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Compras Recientes</h3>
-          {recentPurchases.length > 0 ? (
-            <div className="space-y-3">
-              {recentPurchases.map((purchase) => (
-                <div key={purchase.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">
-                      {purchase.productos?.nombre || 'Producto eliminado'}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {purchase.cantidad} unidades • {purchase.proveedor || 'Sin proveedor'}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-blue-600">
-                      ${purchase.total?.toFixed(2)}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {new Date(purchase.fecha).toLocaleDateString()}
-                    </p>
-                  </div>
+                <div className="text-right">
+                  <p className="text-sm font-medium text-red-600">
+                    {product.stock} unidades
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Mín: {product.stock_minimo || 5}
+                  </p>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500 text-center py-4">No hay compras recientes</p>
-          )}
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
