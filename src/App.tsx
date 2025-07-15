@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Package, Calculator, BarChart3, Search, Plus, AlertTriangle, TrendingUp } from 'lucide-react';
+import { Package, Calculator, BarChart3, Search, Plus, AlertTriangle, TrendingUp, Plane } from 'lucide-react';
 import ProductForm from './components/ProductForm';
 import ProductList from './components/ProductList';
 import PriceCalculator from './components/PriceCalculator';
+import ChinaCostCalculator from './components/ChinaCostCalculator';
 import StockChart from './components/StockChart';
 import Dashboard from './components/Dashboard';
 import { Product } from './types/Product';
 import { ProductService } from './services/productService';
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'stock' | 'add' | 'pricing' | 'chart'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'stock' | 'add' | 'pricing' | 'china' | 'chart'>('dashboard');
   const [products, setProducts] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('');
@@ -91,6 +92,7 @@ function App() {
     { id: 'stock', label: 'Stock', icon: Package },
     { id: 'add', label: 'Agregar Producto', icon: Plus },
     { id: 'pricing', label: 'Calculadora de Precios', icon: Calculator },
+    { id: 'china', label: 'Costos China', icon: Plane },
     { id: 'chart', label: 'Gráficos', icon: BarChart3 }
   ];
 
@@ -280,6 +282,19 @@ function App() {
               <h2 className="text-xl font-semibold text-gray-900">Calculadora de Precios de Venta</h2>
             </div>
             <PriceCalculator />
+          </div>
+        )}
+
+        {/* China Cost Calculator Tab */}
+        {activeTab === 'china' && (
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="flex items-center space-x-3 mb-6">
+              <div className="bg-gradient-to-r from-red-500 to-orange-500 p-2 rounded-lg">
+                <Plane className="h-6 w-6 text-white" />
+              </div>
+              <h2 className="text-xl font-semibold text-gray-900">Calculadora de Costos de Importación desde China</h2>
+            </div>
+            <ChinaCostCalculator />
           </div>
         )}
 
