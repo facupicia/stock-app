@@ -1,18 +1,31 @@
-# Sistema de Gestión de Stock de Ropa
+# Gestión de Importaciones - China
 
-Un sistema completo de gestión de inventario para tiendas de ropa, desarrollado con React, TypeScript, Tailwind CSS y Supabase.
+Una aplicación web especializada para gestionar importaciones de ropa y zapatillas desde China, desarrollada con React, TypeScript, Tailwind CSS y Supabase.
 
 ## Características
 
-- 📦 **Gestión de Inventario**: Agregar, editar y eliminar productos
-- 📊 **Dashboard Completo**: Métricas de ventas, compras y stock
-- 💰 **Gestión de Ventas**: Registro de ventas con cálculo automático de ganancias
-- 🛒 **Gestión de Compras**: Control de reposición de stock
-- 🧮 **Calculadora de Precios**: Herramienta para calcular precios de venta
-- 📈 **Análisis y Gráficos**: Visualización de datos de stock y rentabilidad
-- 🔍 **Búsqueda y Filtros**: Filtrado por categoría, talle, color
-- ⚠️ **Alertas de Stock**: Notificaciones de stock bajo
+- 🇨🇳 **Calculadora de Costos China**: Cálculo preciso de costos de importación
+- 👥 **Gestión de Sellers**: Base de datos completa de proveedores chinos
+- 📊 **Dashboard de Sellers**: Métricas y análisis de proveedores
+- 🔍 **Búsqueda y Filtros**: Encuentra sellers por especialidad
 - 📱 **Diseño Responsivo**: Optimizado para móviles y desktop
+
+## Funcionalidades Principales
+
+### 🇨🇳 Calculadora de Costos China
+- Cálculo de comisión de recarga (4%)
+- Gestión de múltiples productos por pedido
+- Cálculo de envío internacional (primer kg + kg adicionales)
+- Optimización de peso para máxima eficiencia
+- Conversión USD/ARS
+- Análisis detallado por producto
+
+### 👥 Gestión de Sellers
+- Agregar, editar y eliminar sellers
+- Especialidades por categoría (zapatillas, remeras, etc.)
+- Múltiples links de catálogo por seller
+- Búsqueda por nombre, especialidad o descripción
+- Dashboard con métricas de sellers
 
 ## Tecnologías Utilizadas
 
@@ -27,7 +40,7 @@ Un sistema completo de gestión de inventario para tiendas de ropa, desarrollado
 1. Clona el repositorio:
 ```bash
 git clone [URL_DEL_REPOSITORIO]
-cd sistema-stock-ropa
+cd gestion-importaciones-china
 ```
 
 2. Instala las dependencias:
@@ -58,19 +71,14 @@ npm run dev
 ```
 src/
 ├── components/          # Componentes React
-│   ├── Dashboard.tsx
-│   ├── ProductForm.tsx
-│   ├── ProductList.tsx
-│   ├── SalesManager.tsx
-│   ├── PurchaseManager.tsx
-│   ├── PriceCalculator.tsx
-│   └── StockChart.tsx
+│   ├── ChinaCostCalculator.tsx
+│   ├── SellerForm.tsx
+│   ├── SellerList.tsx
+│   └── SellerDashboard.tsx
 ├── services/           # Servicios para API
-│   ├── productService.ts
-│   ├── salesService.ts
-│   └── purchaseService.ts
+│   └── sellerService.ts
 ├── types/              # Definiciones de tipos
-│   └── Product.ts
+│   └── Seller.ts
 ├── lib/                # Configuración
 │   └── supabase.ts
 └── App.tsx             # Componente principal
@@ -80,39 +88,8 @@ src/
 
 El proyecto utiliza Supabase con las siguientes tablas:
 
-- **productos**: Información de productos (nombre, categoría, precios, stock)
-- **ventas**: Registro de ventas con cálculo de ganancias
-- **compras**: Registro de compras para reposición de stock
-
-## Funcionalidades Principales
-
-### Dashboard
-- Métricas de ventas y compras por período
-- Análisis de inventario y rentabilidad
-- Alertas de stock bajo
-- Transacciones recientes
-
-### Gestión de Productos
-- Formulario completo para agregar productos
-- Edición inline en la tabla
-- Cálculo automático de márgenes
-- Códigos únicos generados automáticamente
-
-### Ventas
-- Registro de ventas con validación de stock
-- Cálculo automático de comisiones y ganancias
-- Múltiples métodos de pago
-- Actualización automática de stock
-
-### Compras
-- Registro de compras para reposición
-- Actualización automática de stock y precios de costo
-- Control de proveedores
-
-### Calculadora de Precios
-- Cálculo de precios considerando costos, impuestos, flete
-- Soporte para múltiples monedas (USD/ARS)
-- Presets para diferentes márgenes y plataformas
+- **sellers**: Información de sellers (nombre, especialidad, descripción)
+- **seller_links**: Links de catálogos asociados a cada seller
 
 ## Scripts Disponibles
 
