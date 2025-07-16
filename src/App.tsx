@@ -1,19 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { Package, Calculator, Search, Plus, AlertTriangle, TrendingUp, Plane } from 'lucide-react';
+import { Package, Calculator, Search, Plus, AlertTriangle, TrendingUp, Plane, Users } from 'lucide-react';
 import ProductForm from './components/ProductForm';
 import ProductList from './components/ProductList';
 import PriceCalculator from './components/PriceCalculator';
 import ChinaCostCalculator from './components/ChinaCostCalculator';
+import SellerForm from './components/SellerForm';
+import SellerList from './components/SellerList';
+import SellerDashboard from './components/SellerDashboard';
 import Dashboard from './components/Dashboard';
 import { Product } from './types/Product';
+import { Seller } from './types/Seller';
 import { ProductService } from './services/productService';
+import { SellerService } from './services/sellerService';
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'stock' | 'pricing' | 'china'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'stock' | 'pricing' | 'china' | 'sellers'>('dashboard');
   const [products, setProducts] = useState<Product[]>([]);
+  const [sellers, setSellers] = useState<Seller[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('');
   const [filterSize, setFilterSize] = useState('');
+  const [sellerSearchTerm, setSellerSearchTerm] = useState('');
+  const [sellerFilterSpecialty, setSellerFilterSpecialty] = useState('');
   const [lowStockThreshold, setLowStockThreshold] = useState(5);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -21,6 +29,7 @@ function App() {
   // Cargar productos desde Supabase
   useEffect(() => {
     loadProducts();
+    loadSellers();
   }, []);
 
   const loadProducts = async () => {
@@ -34,6 +43,17 @@ function App() {
       setError('Error al cargar los productos. Verifica tu conexión a Supabase.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadSellers = async () => {
+    try {
+      setError(null);
+      const data = await SellerService.getAll();
+      setSellers(data);
+    } catch (err) {
+      console.error('Error loading sellers:', err);
+      setError('Error al cargar los sellers. Verifica tu conexión a Supabase.');
     }
   };
 
@@ -69,6 +89,38 @@ function App() {
     }
   };
 
+  const addSeller = async (sellerData: any) => {
+    try {
+      const newSeller = await SellerService.create(sellerData);
+      setSellers(prev => [newSeller, ...prev]);
+      return newSeller;
+    } catch (err) {
+      console.error('Error adding seller:', err);
+      throw err;
+    }
+  };
+
+  const updateSeller = async (id: string, updatedSeller: any) => {
+    try {
+      const updated = await SellerService.update(id, updatedSeller);
+      setSellers(prev => prev.map(s => s.id === id ? updated : s));
+      return updated;
+    } catch (err) {
+      console.error('Error updating seller:', err);
+      throw err;
+    }
+  };
+
+  const deleteSeller = async (id: string) => {
+    try {
+      await SellerService.delete(id);
+      setSellers(prev => prev.filter(s => s.id !== id));
+    } catch (err) {
+      console.error('Error deleting seller:', err);
+      throw err;
+    }
+  };
+
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.categoria.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -81,16 +133,28 @@ function App() {
     return matchesSearch && matchesType && matchesSize;
   });
 
+  const filteredSellers = sellers.filter(seller => {
+    const matchesSearch = seller.name.toLowerCase().includes(sellerSearchTerm.toLowerCase()) ||
+      seller.specialty.toLowerCase().includes(sellerSearchTerm.toLowerCase()) ||
+      (seller.description && seller.description.toLowerCase().includes(sellerSearchTerm.toLowerCase()));
+
+    const matchesSpecialty = sellerFilterSpecialty === '' || seller.specialty === sellerFilterSpecialty;
+
+    return matchesSearch && matchesSpecialty;
+  });
+
   const lowStockProducts = products.filter(product => product.stock <= lowStockThreshold);
 
   const productTypes = [...new Set(products.map(p => p.categoria))];
   const productSizes = [...new Set(products.map(p => p.talle))];
+  const sellerSpecialties = [...new Set(sellers.map(s => s.specialty))];
 
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: TrendingUp },
     { id: 'stock', label: 'Stock', icon: Package },
     { id: 'pricing', label: 'Calculadora de Precios', icon: Calculator },
-    { id: 'china', label: 'Costos China', icon: Plane }
+    { id: 'china', label: 'Costos China', icon: Plane },
+    { id: 'sellers', label: 'Sellers', icon: Users }
   ];
 
   if (loading) {
@@ -292,6 +356,68 @@ function App() {
               <h2 className="text-xl font-semibold text-gray-900">Calculadora de Costos de Importación desde China</h2>
             </div>
             <ChinaCostCalculator />
+          </div>
+        )}
+
+        {/* Sellers Tab */}
+        {activeTab === 'sellers' && (
+          <div className="space-y-6">
+            {/* Add Seller Section */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center space-x-3">
+                  <div className="bg-gradient-to-r from-indigo-500 to-purple-500 p-2 rounded-lg">
+                    <Plus className="h-6 w-6 text-white" />
+                  </div>
+                  <h2 className="text-xl font-semibold text-gray-900">Agregar Nuevo Seller</h2>
+                </div>
+              </div>
+              <SellerForm onSubmit={addSeller} />
+            </div>
+            
+            {/* Filters and Search */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
+                <div className="flex-1 max-w-lg">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="Buscar sellers..."
+                      value={sellerSearchTerm}
+                      onChange={(e) => setSellerSearchTerm(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-3">
+                  <select
+                    value={sellerFilterSpecialty}
+                    onChange={(e) => setSellerFilterSpecialty(e.target.value)}
+                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">Todas las especialidades</option>
+                    {sellerSpecialties.map(specialty => (
+                      <option key={specialty} value={specialty}>{specialty}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="mt-4 flex items-center justify-between">
+                <div className="text-sm text-gray-600">
+                  {filteredSellers.length} sellers encontrados
+                </div>
+              </div>
+            </div>
+
+            {/* Seller List */}
+            <SellerList
+              sellers={filteredSellers}
+              onUpdateSeller={updateSeller}
+              onDeleteSeller={deleteSeller}
+            />
           </div>
         )}
       </main>
