@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Package, Calculator, BarChart3, Search, Plus, AlertTriangle, TrendingUp, Plane } from 'lucide-react';
+import { Package, Calculator, Search, Plus, AlertTriangle, TrendingUp, Plane } from 'lucide-react';
 import ProductForm from './components/ProductForm';
 import ProductList from './components/ProductList';
 import PriceCalculator from './components/PriceCalculator';
 import ChinaCostCalculator from './components/ChinaCostCalculator';
-import StockChart from './components/StockChart';
 import Dashboard from './components/Dashboard';
 import { Product } from './types/Product';
 import { ProductService } from './services/productService';
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'stock' | 'add' | 'pricing' | 'china' | 'chart'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'stock' | 'pricing' | 'china'>('dashboard');
   const [products, setProducts] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('');
@@ -90,10 +89,8 @@ function App() {
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: TrendingUp },
     { id: 'stock', label: 'Stock', icon: Package },
-    { id: 'add', label: 'Agregar Producto', icon: Plus },
     { id: 'pricing', label: 'Calculadora de Precios', icon: Calculator },
-    { id: 'china', label: 'Costos China', icon: Plane },
-    { id: 'chart', label: 'Gráficos', icon: BarChart3 }
+    { id: 'china', label: 'Costos China', icon: Plane }
   ];
 
   if (loading) {
@@ -188,6 +185,19 @@ function App() {
         {/* Stock Management Tab */}
         {activeTab === 'stock' && (
           <div className="space-y-6">
+            {/* Add Product Section */}
+            <div className="bg-white rounded-xl shadow-sm p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center space-x-3">
+                  <div className="bg-gradient-to-r from-green-500 to-teal-500 p-2 rounded-lg">
+                    <Plus className="h-6 w-6 text-white" />
+                  </div>
+                  <h2 className="text-xl font-semibold text-gray-900">Agregar Nuevo Producto</h2>
+                </div>
+              </div>
+              <ProductForm onAddProduct={addProduct} />
+            </div>
+            
             {/* Filters and Search */}
             <div className="bg-white rounded-xl shadow-sm p-6">
               <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
@@ -259,19 +269,6 @@ function App() {
           </div>
         )}
 
-        {/* Add Product Tab */}
-        {activeTab === 'add' && (
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center space-x-3 mb-6">
-              <div className="bg-gradient-to-r from-green-500 to-teal-500 p-2 rounded-lg">
-                <Plus className="h-6 w-6 text-white" />
-              </div>
-              <h2 className="text-xl font-semibold text-gray-900">Agregar Nuevo Producto</h2>
-            </div>
-            <ProductForm onAddProduct={addProduct} />
-          </div>
-        )}
-
         {/* Price Calculator Tab */}
         {activeTab === 'pricing' && (
           <div className="bg-white rounded-xl shadow-sm p-6">
@@ -295,19 +292,6 @@ function App() {
               <h2 className="text-xl font-semibold text-gray-900">Calculadora de Costos de Importación desde China</h2>
             </div>
             <ChinaCostCalculator />
-          </div>
-        )}
-
-        {/* Chart Tab */}
-        {activeTab === 'chart' && (
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center space-x-3 mb-6">
-              <div className="bg-gradient-to-r from-orange-500 to-red-500 p-2 rounded-lg">
-                <BarChart3 className="h-6 w-6 text-white" />
-              </div>
-              <h2 className="text-xl font-semibold text-gray-900">Análisis de Stock</h2>
-            </div>
-            <StockChart products={products} />
           </div>
         )}
       </main>

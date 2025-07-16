@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plane, Package, Calculator, DollarSign, Weight, Truck, CreditCard, AlertCircle } from 'lucide-react';
 
 interface ProductCost {
+  name: string;
   price: number;
   internalShipping: number;
   weight: number; // en gramos
@@ -20,7 +21,7 @@ interface ChinaCostCalculation {
 
 const ChinaCostCalculator: React.FC = () => {
   const [products, setProducts] = useState<ProductCost[]>([
-    { price: 0, internalShipping: 1, weight: 200 }
+    { name: '', price: 0, internalShipping: 1, weight: 200 }
   ]);
   
   const [calculation, setCalculation] = useState<ChinaCostCalculation>({
@@ -36,6 +37,8 @@ const ChinaCostCalculator: React.FC = () => {
 
   const [usdToArsRate, setUsdToArsRate] = useState(1200);
   const [showInPesos, setShowInPesos] = useState(false);
+  const [optimalWeight, setOptimalWeight] = useState(5999);
+  const [showAllProducts, setShowAllProducts] = useState(false);
 
   useEffect(() => {
     calculateCosts();
@@ -77,7 +80,7 @@ const ChinaCostCalculator: React.FC = () => {
   };
 
   const addProduct = () => {
-    setProducts([...products, { price: 0, internalShipping: 1, weight: 200 }]);
+    setProducts([...products, { name: '', price: 0, internalShipping: 1, weight: 200 }]);
   };
 
   const removeProduct = (index: number) => {
@@ -86,9 +89,12 @@ const ChinaCostCalculator: React.FC = () => {
     }
   };
 
-  const updateProduct = (index: number, field: keyof ProductCost, value: number) => {
+  const updateProduct = (index: number, field: keyof ProductCost, value: string | number) => {
     const updatedProducts = products.map((product, i) => 
-      i === index ? { ...product, [field]: value } : product
+      i === index ? { 
+        ...product, 
+        [field]: field === 'name' ? value : (parseFloat(value as string) || 0)
+      } : product
     );
     setProducts(updatedProducts);
   };
@@ -101,7 +107,6 @@ const ChinaCostCalculator: React.FC = () => {
   };
 
   const getWeightEfficiency = () => {
-    const optimalWeight = 5999; // gramos
     const currentWeight = calculation.totalWeight;
     
     if (currentWeight <= optimalWeight) {
@@ -192,6 +197,19 @@ const ChinaCostCalculator: React.FC = () => {
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="md:col-span-3">
+                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                        Nombre del Producto
+                      </label>
+                      <input
+                        type="text"
+                        value={product.name}
+                        onChange={(e) => updateProduct(index, 'name', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                        placeholder="Ej: Camiseta Nike, Pantalón Adidas..."
+                      />
+                    </div>
+                    
                     <div>
                       <label className="block text-xs font-medium text-gray-600 mb-1">
                         Precio (USD)
@@ -210,15 +228,16 @@ const ChinaCostCalculator: React.FC = () => {
                       <label className="block text-xs font-medium text-gray-600 mb-1">
                         Envío Interno (USD)
                       </label>
-                      <select
+                      <input
+                        type="number"
+                        step="0.01"
+                        min="0.5"
+                        max="1.5"
                         value={product.internalShipping}
-                        onChange={(e) => updateProduct(index, 'internalShipping', parseFloat(e.target.value))}
+                        onChange={(e) => updateProduct(index, 'internalShipping', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                      >
-                        <option value={0.5}>$0.50</option>
-                        <option value={1}>$1.00</option>
-                        <option value={1.5}>$1.50</option>
-                      </select>
+                        placeholder="0.50 - 1.50"
+                      />
                     </div>
                     
                     <div>
@@ -247,6 +266,19 @@ const ChinaCostCalculator: React.FC = () => {
             </h3>
             
             <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Peso Óptimo (gramos)
+                </label>
+                <input
+                  type="number"
+                  value={optimalWeight}
+                  onChange={(e) => setOptimalWeight(parseFloat(e.target.value) || 5999)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="5999"
+                />
+              </div>
+              
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Peso Total:</span>
                 <span className="font-medium">{calculation.totalWeight}g ({(calculation.totalWeight/1000).toFixed(2)}kg)</span>
@@ -254,15 +286,15 @@ const ChinaCostCalculator: React.FC = () => {
               
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Peso Óptimo:</span>
-                <span className="font-medium">5,999g (5.99kg)</span>
+                <span className="font-medium">{optimalWeight.toLocaleString()}g ({(optimalWeight/1000).toFixed(2)}kg)</span>
               </div>
               
               <div className="w-full bg-gray-200 rounded-full h-3">
                 <div
                   className={`h-3 rounded-full transition-all duration-500 ${
-                    calculation.totalWeight <= 5999 ? 'bg-green-500' : 'bg-yellow-500'
+                    calculation.totalWeight <= optimalWeight ? 'bg-green-500' : 'bg-yellow-500'
                   }`}
-                  style={{ width: `${Math.min((calculation.totalWeight / 5999) * 100, 100)}%` }}
+                  style={{ width: `${Math.min((calculation.totalWeight / optimalWeight) * 100, 100)}%` }}
                 />
               </div>
               
@@ -373,7 +405,7 @@ const ChinaCostCalculator: React.FC = () => {
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Análisis por Producto</h3>
             
             <div className="space-y-3">
-              {products.map((product, index) => {
+              {products.slice(0, showAllProducts ? products.length : 3).map((product, index) => {
                 const productTotal = product.price + product.internalShipping;
                 const productShare = productTotal / calculation.totalProductCost;
                 const allocatedShipping = (calculation.internationalShipping + calculation.serviceCharge) * productShare;
@@ -383,7 +415,9 @@ const ChinaCostCalculator: React.FC = () => {
                 return (
                   <div key={index} className="border border-gray-200 rounded-lg p-3">
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm font-medium text-gray-900">Producto {index + 1}</span>
+                      <span className="text-sm font-medium text-gray-900">
+                        {product.name || `Producto ${index + 1}`}
+                      </span>
                       <span className="text-sm font-bold text-green-600">
                         {formatPrice(totalProductCost)}
                       </span>
@@ -405,6 +439,15 @@ const ChinaCostCalculator: React.FC = () => {
                   </div>
                 );
               })}
+              
+              {products.length > 3 && (
+                <button
+                  onClick={() => setShowAllProducts(!showAllProducts)}
+                  className="w-full py-2 px-4 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors border border-blue-200"
+                >
+                  {showAllProducts ? 'Ver menos productos' : `Ver todos los productos (${products.length})`}
+                </button>
+              )}
             </div>
           </div>
         </div>
