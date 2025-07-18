@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Seller } from '../types/Seller';
 import { Edit2, Trash2, ExternalLink, User, Tag, Calendar, MessageSquare } from 'lucide-react';
 import SellerForm from './SellerForm';
+import { useAuth } from '../hooks/useAuth';
 
 interface SellerListProps {
   sellers: Seller[];
@@ -16,6 +17,7 @@ const SellerList: React.FC<SellerListProps> = ({
 }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  const { isAdmin } = useAuth();
 
   const handleEdit = (seller: Seller) => {
     setEditingId(seller.id);
@@ -135,22 +137,24 @@ const SellerList: React.FC<SellerListProps> = ({
                     </div>
                   </div>
                   
-                  <div className="flex space-x-2 ml-4">
-                    <button
-                      onClick={() => handleEdit(seller)}
-                      className="text-blue-600 hover:text-blue-800 p-2 rounded-lg hover:bg-blue-50 transition-colors"
-                      title="Editar seller"
-                    >
-                      <Edit2 className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(seller.id, seller.name)}
-                      className="text-red-600 hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-colors"
-                      title="Eliminar seller"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
+                  {isAdmin && (
+                    <div className="flex space-x-2 ml-4">
+                      <button
+                        onClick={() => handleEdit(seller)}
+                        className="text-blue-600 hover:text-blue-800 p-2 rounded-lg hover:bg-blue-50 transition-colors"
+                        title="Editar seller"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(seller.id, seller.name)}
+                        className="text-red-600 hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition-colors"
+                        title="Eliminar seller"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
 

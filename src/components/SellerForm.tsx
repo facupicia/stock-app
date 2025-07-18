@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { SellerFormData, SPECIALTIES } from '../types/Seller';
 import { Check, X, Plus, Trash2, ExternalLink } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
 
 interface SellerFormProps {
   onSubmit: (seller: SellerFormData) => Promise<any>;
@@ -15,6 +16,7 @@ const SellerForm: React.FC<SellerFormProps> = ({
   isEditing = false, 
   onCancel 
 }) => {
+  const { isAdmin } = useAuth();
   const [formData, setFormData] = useState<SellerFormData>(
     initialData || {
       name: '',
@@ -27,6 +29,17 @@ const SellerForm: React.FC<SellerFormProps> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Si no es admin, no mostrar el formulario
+  if (!isAdmin) {
+    return (
+      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
+        <div className="text-yellow-600 mb-2">⚠️</div>
+        <h3 className="text-lg font-medium text-yellow-800 mb-2">Acceso Restringido</h3>
+        <p className="text-yellow-700">Solo los administradores pueden agregar o editar sellers.</p>
+      </div>
+    );
+  }
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};

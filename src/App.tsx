@@ -1,19 +1,38 @@
 import React, { useState, useEffect } from 'react';
-import { Plane, Users, Search, Plus } from 'lucide-react';
+import { Plane, Users, Search, Plus, LogOut, Shield, User } from 'lucide-react';
 import ChinaCostCalculator from './components/ChinaCostCalculator';
 import SellerForm from './components/SellerForm';
 import SellerList from './components/SellerList';
 import SellerDashboard from './components/SellerDashboard';
+import AuthForm from './components/AuthForm';
 import { Seller } from './types/Seller';
 import { SellerService } from './services/sellerService';
+import { useAuth } from './hooks/useAuth';
 
 function App() {
+  const { user, profile, loading: authLoading, isAdmin, signIn, signUp, signOut } = useAuth();
   const [activeTab, setActiveTab] = useState<'china' | 'sellers'>('china');
   const [sellers, setSellers] = useState<Seller[]>([]);
   const [sellerSearchTerm, setSellerSearchTerm] = useState('');
   const [sellerFilterSpecialty, setSellerFilterSpecialty] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Si no está autenticado, mostrar formulario de login
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Cargando aplicación...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <AuthForm onSignIn={signIn} onSignUp={signUp} />;
+  }
 
   // Cargar sellers desde Supabase
   useEffect(() => {
@@ -127,6 +146,34 @@ function App() {
                 <p className="text-sm text-gray-600">Costos de China y Sellers</p>
               </div>
             </div>
+            
+            {/* User Info and Logout */}
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2 text-sm">
+                <div className="flex items-center space-x-1">
+                  {isAdmin ? (
+                    <Shield className="h-4 w-4 text-purple-600" />
+                  ) : (
+                    <User className="h-4 w-4 text-gray-600" />
+                  )}
+                  <span className="text-gray-700">{profile?.email}</span>
+                </div>
+                {isAdmin && (
+                  <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-medium">
+                    Admin
+                  </span>
+                )}
+              </div>
+              
+              <button
+                onClick={signOut}
+                className="flex items-center space-x-1 px-3 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+                title="Cerrar sesión"
+              >
+                <LogOut className="h-4 w-4" />
+                <span className="text-sm">Salir</span>
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -176,18 +223,20 @@ function App() {
             {/* Seller Dashboard */}
             <SellerDashboard sellers={sellers} onRefresh={loadSellers} />
             
-            {/* Add Seller Section */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center space-x-3">
-                  <div className="bg-gradient-to-r from-indigo-500 to-purple-500 p-2 rounded-lg">
-                    <Plus className="h-6 w-6 text-white" />
+            {/* Add Seller Section - Solo para admins */}
+            {isAdmin && (
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center space-x-3">
+                    <div className="bg-gradient-to-r from-indigo-500 to-purple-500 p-2 rounded-lg">
+                      <Plus className="h-6 w-6 text-white" />
+                    </div>
+                    <h2 className="text-xl font-semibold text-gray-900">Agregar Nuevo Seller</h2>
                   </div>
-                  <h2 className="text-xl font-semibold text-gray-900">Agregar Nuevo Seller</h2>
                 </div>
+                <SellerForm onSubmit={addSeller} />
               </div>
-              <SellerForm onSubmit={addSeller} />
-            </div>
+            )}
             
             {/* Filters and Search */}
             <div className="bg-white rounded-xl shadow-sm p-6">
