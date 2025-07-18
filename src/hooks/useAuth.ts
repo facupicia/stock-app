@@ -73,7 +73,42 @@ export const useAuth = () => {
         .single();
 
       if (error) {
-        console.error('Error loading user profile:', error);
+        // Si no existe el perfil, intentar crearlo
+        if (error.code === 'PGRST116') {
+          try {
+            const { data: newProfile, error: createError } = await supabase
+              .from('user_profiles')
+              .insert([{
+                user_id: user.id,
+                email: user.email,
+                role: 'user'
+              }])
+              .select()
+              .single();
+
+            if (createError) {
+              console.error('Error creating user profile:', createError);
+              setAuthState({
+                user,
+                profile: null,
+                loading: false,
+                isAdmin: false
+              });
+              return;
+            }
+
+            setAuthState({
+              user,
+              profile: newProfile,
+              loading: false,
+              isAdmin: newProfile?.role === 'admin'
+            });
+            return;
+          } catch (createErr) {
+            console.error('Error in profile creation:', createErr);
+          }
+        }
+        
         setAuthState({
           user,
           profile: null,

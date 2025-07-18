@@ -8,7 +8,7 @@ export class SellerService {
       .from('sellers')
       .select(`
         *,
-        links:seller_links(*)
+        seller_links(*)
       `)
       .order('created_at', { ascending: false });
 
@@ -17,7 +17,11 @@ export class SellerService {
       throw error;
     }
 
-    return data || [];
+    // Mapear los datos para que coincidan con el tipo Seller
+    return (data || []).map(seller => ({
+      ...seller,
+      links: seller.seller_links || []
+    }));
   }
 
   // Obtener seller por ID con sus links
@@ -26,7 +30,7 @@ export class SellerService {
       .from('sellers')
       .select(`
         *,
-        links:seller_links(*)
+        seller_links(*)
       `)
       .eq('id', id)
       .single();
@@ -36,7 +40,13 @@ export class SellerService {
       throw error;
     }
 
-    return data;
+    if (!data) return null;
+
+    // Mapear los datos para que coincidan con el tipo Seller
+    return {
+      ...data,
+      links: data.seller_links || []
+    };
   }
 
   // Crear nuevo seller con links
@@ -158,7 +168,7 @@ export class SellerService {
       .from('sellers')
       .select(`
         *,
-        links:seller_links(*)
+        seller_links(*)
       `)
       .eq('specialty', specialty)
       .order('created_at', { ascending: false });
@@ -168,7 +178,10 @@ export class SellerService {
       throw error;
     }
 
-    return data || [];
+    return (data || []).map(seller => ({
+      ...seller,
+      links: seller.seller_links || []
+    }));
   }
 
   // Buscar sellers por nombre
@@ -177,7 +190,7 @@ export class SellerService {
       .from('sellers')
       .select(`
         *,
-        links:seller_links(*)
+        seller_links(*)
       `)
       .or(`name.ilike.%${searchTerm}%,specialty.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`)
       .order('created_at', { ascending: false });
@@ -187,7 +200,10 @@ export class SellerService {
       throw error;
     }
 
-    return data || [];
+    return (data || []).map(seller => ({
+      ...seller,
+      links: seller.seller_links || []
+    }));
   }
 
   // Obtener todas las especialidades únicas
